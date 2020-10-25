@@ -7,30 +7,27 @@ import javax.swing.*;
 
 import quick.dbtable.DBTable;
 import java.awt.event.ActionListener;
+import java.beans.PropertyVetoException;
 import java.awt.event.ActionEvent;
 
 
 
 public class AdminPsswd extends javax.swing.JInternalFrame  {
 	
-
-	
+	//Declaramos las variables 
 	private JDialog dialog; //Muestra los errores
 	private JTextField txtAdmin;
-	private JPasswordField passwordField;
+	private JPasswordField txtPwd;
 	private DBTable tabla;  
 	private JPanel panel;
+	private JButton entrar;
 	
-	
+	//Constructor
 	public AdminPsswd() {
 		super();
 		initGUI();
 		
 	}
-	
-	
-	
-	
 	
 	private void initGUI() {
 		
@@ -42,63 +39,70 @@ public class AdminPsswd extends javax.swing.JInternalFrame  {
 	      {
 	         e.printStackTrace();
 	      }
-		
-		setPreferredSize(new Dimension(800, 600));
-		 this.setBounds(0, 0, 801, 600);
-         setVisible(true);
+		//Dimensionamos
+		setPreferredSize(new Dimension(900, 700));
+		this.setResizable(true);
+		this.setBounds(0, 0, 900, 700);
+        setVisible(true);
 		this.setTitle("Administrador");
 		getContentPane().setLayout(null);
 		
+		panel = new JPanel();
+		panel.setBounds(0, 0,900, 700);
+		panel.setOpaque(true);
+		panel.setBackground(new Color(255, 243, 224));
+		getContentPane().add(panel);
+		panel.setLayout(null);
+		
+		//Elementos
 		txtAdmin = new JTextField();
+		txtAdmin.setBounds(251, 255, 86, 20);
+		panel.add(txtAdmin);
 		txtAdmin.setHorizontalAlignment(SwingConstants.CENTER);
-		txtAdmin.setBounds(222, 193, 66, 20);
 		txtAdmin.setText("Admin");
 		txtAdmin.setEditable(false);
-		getContentPane().add(txtAdmin);
 		txtAdmin.setColumns(10);
+		txtPwd = new JPasswordField();
+		txtPwd.setLocation(347, 255);
+		panel.add(txtPwd);
+		txtPwd.setHorizontalAlignment(SwingConstants.CENTER);
+		txtPwd.setSize(115,20);
 		
-		passwordField = new JPasswordField();
-		passwordField.setBounds(298, 193, 66, 20);
-		getContentPane().add(passwordField);
-		
-		JButton btnEntrar = new JButton("Entrar");
-		btnEntrar.setBounds(374, 192, 89, 23);
-		getContentPane().add(btnEntrar);
-		
-		panel = new JPanel();
-		panel.setBounds(0, 0, 784, 561);
-		panel.setBackground(Color.white);
-		getContentPane().add(panel);
+		entrar = new JButton("Entrar");
+		entrar.setBounds(472, 254, 63, 23);
+		panel.add(entrar);
+		//Si entramos correctamente cambiamos de Frame sino no
+		entrar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				boolean exitosa=conectarBD();
+				if(exitosa) {
+					siguienteVentana();
+				}
+			}
+		});
 			 
 			 
 		// crea la tabla  
     	tabla = new DBTable();	 
-    	
-		btnEntrar.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				conectarBD();
-				siguienteVentana();
-			}
-		});
 		
 	}
 	
-	private void conectarBD()
-	   {
+	private boolean conectarBD() {
+			boolean exito=false;
 	         try
 	         {
 	            String driver ="com.mysql.cj.jdbc.Driver";
 	        	String servidor = "localhost:3306";
 	        	String baseDatos = "parquimetros"; 
 	        	String usuario = "admin";
-	        	char[] clavee = passwordField.getPassword();
+	        	char[] clavee = txtPwd.getPassword();
 	        	String clave = concatenar(clavee);
 	            String uriConexion = "jdbc:mysql://" + servidor + "/" + 
 	        	                     baseDatos +"?serverTimezone=America/Argentina/Buenos_Aires";
 	   
 	       //establece una conexión con la  B.D. "batallas"  usando directamante una tabla DBTable    
 	            tabla.connectDatabase(driver, uriConexion, usuario, clave);
-	           
+	            exito=true;
 	         }
 	         catch (SQLException ex)
 	         {
@@ -115,7 +119,7 @@ public class AdminPsswd extends javax.swing.JInternalFrame  {
 	         {
 	            e.printStackTrace();
 	         }
-	      
+	      return exito;
 	   }
 	
 	private String concatenar(char[] clave) {
@@ -123,36 +127,19 @@ public class AdminPsswd extends javax.swing.JInternalFrame  {
 		for (char c : clave) {
 			s = s + c;
 		}
-		
 		return s;
 	}
 	
 	private void siguienteVentana() {
 		VentanaAdmin admin = new VentanaAdmin();
-		getContentPane().validate();
-		getContentPane().revalidate();
+		//getContentPane().validate();
+		//getContentPane().revalidate();
 		getContentPane().removeAll();
 		getContentPane().add(admin);
-		getContentPane().repaint();
-		setContentPane(getContentPane());
+		validate();
+		//setContentPane(admin);
+		//getContentPane().repaint();
+		//setContentPane(getContentPane());
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

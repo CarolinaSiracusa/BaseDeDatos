@@ -40,13 +40,13 @@ import javax.swing.text.MaskFormatter;
 
 import quick.dbtable.*;
 import javax.swing.JList;
+import java.awt.Color;
 
 @SuppressWarnings("serial")
 public class VentanaAdmin extends javax.swing.JInternalFrame {
 
 	private JPanel pnlInferior;
-	private JButton btnBorrar;
-	private JPanel pnlBotones;
+	private JButton btnejecutar;
 	// private JScrollPane scrTabla;
 	// private JTable tabla;
 	private DBTable tabla;
@@ -61,15 +61,23 @@ public class VentanaAdmin extends javax.swing.JInternalFrame {
 
 	public VentanaAdmin() {
 		super();
+		getContentPane().setBackground(new Color(255, 255, 204 ));
 		initGUI();
 	}
 
 	private void initGUI() {
+		try 
+	      {
+	         javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+	      } 
+	     catch(Exception e) 
+	      {
+	         e.printStackTrace();
+	      }
 		try {
-			setPreferredSize(new Dimension(800, 600));
-			this.setResizable(true);
-		
-			this.setBounds(0, 0, 801, 600);
+			setPreferredSize(new Dimension(850, 650));
+			this.setResizable(true);		
+			this.setBounds(0, 0, 850, 650);
 			this.setTitle("Consultas Administrador");
 			this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 			this.setResizable(true);
@@ -79,85 +87,65 @@ public class VentanaAdmin extends javax.swing.JInternalFrame {
 			this.conectarBD();
 
 			// Utilizando DBTable
-			{
-				// crea la tabla
-				tabla = new DBTable();
-				tabla.setBounds(0, 0, 558, 403);
-
-				
-
-				
-				getContentPane().setLayout(null);
-				// Agregar la tabla al frame (no necesita JScrollPane como Jtable)
-				getContentPane().add(tabla);
-
-				// setea la tabla solo para lectura, no se puede editar su contenido
-				tabla.setEditable(false);
+			// crea la tabla
+			tabla = new DBTable();
+			tabla.setBounds(0, 0, 558, 403);				
+			getContentPane().setLayout(null);
 			
-				pnlInferior = new JPanel();
-				pnlInferior.setBounds(0, 414, 784, 156);
-				getContentPane().add(pnlInferior);
-				pnlInferior.setPreferredSize(new java.awt.Dimension(638, 88));
-				pnlInferior.setLayout(null);
+			// Agregar la tabla al frame (no necesita JScrollPane como Jtable)
+			getContentPane().add(tabla);
+			//Creando lugar de Consultas
+			txtConsultas = new JTextField();
+			txtConsultas.setBounds(0, 0, 833, 90);
+			txtConsultas.setText("Escriba su consulta");
+			txtConsultas.setColumns(10);
+			txtConsultas.setBackground(new Color(255, 245, 157));
 				
-					pnlBotones = new JPanel();
-					pnlBotones.setBounds(0, 113, 784, 31);
-					pnlInferior.add(pnlBotones);
-					pnlBotones.setPreferredSize(new java.awt.Dimension(638, 31));
-					
-					txtConsultas = new JTextField();
-					txtConsultas.setBounds(0, 0, 784, 90);
-					pnlInferior.add(txtConsultas);
-					txtConsultas.setText("Para poner consultas");
-					txtConsultas.setColumns(10);
-					
-						btnBorrar = new JButton();
-						pnlBotones.add(btnBorrar);
-						btnBorrar.setText("Ejecutar");
-						btnBorrar.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent evt) {
-								//Ejecutar lo que se ponga en el texto
-								String consulta = txtConsultas.getText();
-								ejecutar(consulta);
-							}
-						});
-					
-					
-						
-						
+			pnlInferior = new JPanel();
+			pnlInferior.setBounds(0, 414, 834, 156);
+			getContentPane().add(pnlInferior);
+			pnlInferior.setPreferredSize(new java.awt.Dimension(638, 88));
+			pnlInferior.setLayout(null);
+			pnlInferior.setBackground(new Color(255, 255, 204 ));
+			pnlInferior.add(txtConsultas);
+				
+			btnejecutar = new JButton();
+			btnejecutar.setBounds(303, 113, 73, 32);
+			pnlInferior.add(btnejecutar);
+			btnejecutar.setText("Ejecutar");
+			btnejecutar.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent evt) {
+					//Ejecutar lo que se ponga en el texto
+					String consulta = txtConsultas.getText();
+					ejecutar(consulta);
+				}
+			});
 						//11 items
-						
-						
-							panelDer = new JPanel();
-							panelDer.setBounds(557, 0, 227, 403);
-							getContentPane().add(panelDer);
+			panelDer = new JPanel();
+			panelDer.setBounds(557, 0, 277, 403);
+			getContentPane().add(panelDer);
 							
 							
-							tablas = obtenerTablas();
-							panelDer.setLayout(new GridLayout(0, 1, 0, 0));
-							listTablas = new JList(tablas);
-							panelDer.add(listTablas);
-						
-							DefaultListModel listModel = new DefaultListModel();
-							list = new JList(listModel);
-							panelDer.add(list);
-							
-							
-							
-							listTablas.addMouseListener(new MouseAdapter() {
-								@Override
-								public void mouseClicked(MouseEvent e) {
-									listModel.clear();
-									String [] atr = mostrarInfo();
-									for (String a : atr) {
-										listModel.addElement(a);
-									}
-								
-									repaint();
-									
-								}
-							});
+			tablas = obtenerTablas();
+			panelDer.setLayout(new GridLayout(0, 1, 0, 0));
+			listTablas = new JList(tablas);
+			panelDer.add(listTablas);
+			listTablas.setBackground(new Color(178, 223, 219));
+			DefaultListModel listModel = new DefaultListModel();
+			list = new JList(listModel);
+			panelDer.add(list);
+			list.setBackground(new Color(224, 242, 241));
+			listTablas.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					listModel.clear();
+					String [] atr = mostrarInfo();
+					for (String a : atr) {
+						listModel.addElement(a);
 					}
+					repaint();
+				}
+			});
 				
 			
 			pack();

@@ -1,4 +1,5 @@
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -42,20 +43,21 @@ import javax.swing.JList;
 import javax.swing.JTextArea;
 import javax.swing.JComboBox;
 import javax.swing.JCheckBox;
+import javax.swing.border.BevelBorder;
 
 public class VentanaInspector extends javax.swing.JInternalFrame{
 	private JTextField textField;
 	protected Connection conexionBD = null;
 	//private DBTable tabla;  
-	JComboBox CBUbicaciones;
-	DefaultListModel listModel;
-	JList listUbicParq;
-	String legajo;
-	String ubicacion;
-	LocalDate miFecha;
-	LocalDateTime miHora;
-	int idasociado_con;
-	
+	private JComboBox CBUbicaciones;
+	private DefaultListModel listModel;
+	private JList listUbicParq;
+	private String legajo;
+	private String ubicacion;
+	private LocalDate miFecha;
+	private LocalDateTime miHora;
+	private String idasociado_con;
+
 	public VentanaInspector(String legajo) {
 		super();
 		this.legajo=legajo;
@@ -78,6 +80,7 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		this.setClosable(true);
 		this.setVisible(true);
 		this.setMaximizable(true);
+		this.setBackground(new Color(187, 222, 251));
 		
 		conectarBD();
 		
@@ -86,16 +89,18 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		getContentPane().setVisible(true);
 		JPanel panelPatentes = new JPanel();
 		panelPatentes.setBounds(10, 11, 241, 299);
-		getContentPane().add(panelPatentes);
 		panelPatentes.setLayout(null);
+		panelPatentes.setOpaque(false);
+		getContentPane().add(panelPatentes);
 		
 		textField = new JTextField();
-		textField.setBounds(10, 74, 221, 113);
+		textField.setBounds(10, 74, 221, 142);
+		textField.setBackground(new Color(250, 250, 250));
 		panelPatentes.add(textField);
 		textField.setColumns(10);
-		
-		JLabel lblAgregue = new JLabel("Agregue");
-		lblAgregue.setBounds(66, 6, 109, 57);
+	
+		JLabel lblAgregue = new JLabel("<html>Agregue las patentes, separadas por <br/>coma, sin espacios</html>");
+		lblAgregue.setBounds(10, 6, 204, 57);
 		panelPatentes.add(lblAgregue);
 		
 		JButton btnNewButton = new JButton("AgregarPatentes");
@@ -108,19 +113,22 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		
 		JPanel panelUbParq = new JPanel();
 		panelUbParq.setBounds(261, 11, 229, 299);
-		getContentPane().add(panelUbParq);
 		panelUbParq.setLayout(null);
+		panelUbParq.setOpaque(false);
+		getContentPane().add(panelUbParq);
+		
 		
 		
 		CBUbicaciones = new JComboBox();
 		CBUbicaciones.setBounds(0, 0, 229, 45);
-		
 		CBUbicaciones.setToolTipText("Ubicaciones");
 		
 		panelUbParq.add(CBUbicaciones);
 		String[] patentes = obtenerPatentes();
 		listModel = new DefaultListModel();
 		listUbicParq = new JList(listModel);
+		listUbicParq.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		listUbicParq.setVisible(false);
 		listUbicParq.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -132,6 +140,7 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 			}
 		});
 		listUbicParq.setBounds(0, 65, 229, 233);
+		listUbicParq.setBackground(new Color(204, 204, 255 ));
 		panelUbParq.add(listUbicParq);
 		
 		obtenerUbicaciones();
@@ -141,6 +150,7 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		CBUbicaciones.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				ubicacion = CBUbicaciones.getSelectedItem().toString();
+				listUbicParq.setVisible(true);
 				obtenerParquimetros(ubicacion);
 				repaint();
 			}
@@ -149,23 +159,16 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		
 		//Hay que verificar que ese inspector trabaje ese dia y turno, en esa ubicacion
 		
-		if(verificarAsociacion()) {
-			
-		}
-		
-	
-		
-		
 		repaint();
 		
 	}
 	
-	private void sigVentana(String id_parq, String[] patentes, int id_asoc) {
-		UnidadParquimetro ins = new UnidadParquimetro(id_parq,patentes,id_asoc);
+	private void sigVentana(String id_parq, String[] patentes, String id_asoc) {
+		//UnidadParquimetro uni = new UnidadParquimetro(id_parq,patentes,id_asoc);
 		getContentPane().validate();
 		getContentPane().revalidate();
 		getContentPane().removeAll();
-		getContentPane().add(ins);
+		//getContentPane().add(ins);
 		getContentPane().repaint();
 		setContentPane(getContentPane());
 	}
@@ -195,15 +198,17 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 			miHora = LocalDateTime.now();
 			int hora = miHora.getHour();
 			String turno= turno(hora);
-			idasociado_con=rs.getString(1);
+			//idasociado_con=rs.getString(1);
 			while(rs.next()) {
 				if(rs.getString(5).equals(dia) && rs.getString(6).equals(turno)) {
+					idasociado_con=rs.getString(1);
 					String[] datosUbicacion= ubicacion.split(" ",2);
 					if(rs.getString(3).equals(datosUbicacion[0]) && rs.getString(4).equals(datosUbicacion[1])){
 						verificar=true;
 					}
 				}
 			}
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -313,11 +318,7 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 				String altura = rs.getString(2);
 				String ubic = calle + " " + altura;
 				CBUbicaciones.addItem(ubic);
-			}
-			
-			
-			
-			
+			}		
 		} catch (SQLException ex) {
 			JOptionPane.showMessageDialog(this,
 					"Se produjo un error al intentar conectarse a la base de datos.\n" + ex.getMessage(), "Error",

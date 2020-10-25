@@ -49,43 +49,46 @@ public class InspectorPsswd extends javax.swing.JInternalFrame  {
 	      {
 	         e.printStackTrace();
 	      }
-		
-		setPreferredSize(new Dimension(800, 600));
-		 this.setBounds(0, 0, 801, 600);
-         setVisible(true);
+		//Dimensionamos
+		setPreferredSize(new Dimension(900, 700));
+		this.setResizable(true);
+		this.setBounds(0, 0, 900, 700);
+        setVisible(true);
 		this.setTitle("Inspector");
 		getContentPane().setLayout(null);
 		
 		panel = new JPanel();
-		panel.setBounds(0, 0, 784, 561);
-		panel.setBackground(Color.white);
+		panel.setBounds(0, 0, 884, 700);
+		panel.setOpaque(true);
+		panel.setBackground(new Color(197, 202, 233));
 		getContentPane().add(panel);
 		panel.setLayout(null);
 		
 		lblUnidadPersonalDel = new JLabel("UNIDAD PERSONAL DEL INSPECTOR");
-		lblUnidadPersonalDel.setBounds(219, 9, 264, 84);
+		lblUnidadPersonalDel.setHorizontalAlignment(SwingConstants.CENTER);
+		lblUnidadPersonalDel.setBounds(0, 48, 884, 84);
 		panel.add(lblUnidadPersonalDel);
 		
 		JButton btnEntrar = new JButton("Entrar");
-		btnEntrar.setBounds(420, 184, 63, 23);
+		btnEntrar.setBounds(456, 250, 63, 23);
 		panel.add(btnEntrar);
 		
 		passwordField = new JPasswordField();
-		passwordField.setBounds(313, 185, 75, 20);
+		passwordField.setBounds(333, 251, 101, 20);
 		panel.add(passwordField);
 		
 		txtInspector = new JTextField();
-		txtInspector.setBounds(204, 185, 86, 20);
+		txtInspector.setBounds(235, 251, 77, 20);
 		panel.add(txtInspector);
 		txtInspector.setHorizontalAlignment(SwingConstants.CENTER);
 		txtInspector.setColumns(10);
 		
 		JLabel lblLegajo = new JLabel("Legajo");
-		lblLegajo.setBounds(229, 160, 46, 14);
+		lblLegajo.setBounds(235, 233, 46, 14);
 		panel.add(lblLegajo);
 		
-		JLabel lblConstrasea = new JLabel("Constrase\u00F1a");
-		lblConstrasea.setBounds(313, 160, 77, 14);
+		JLabel lblConstrasea = new JLabel("Contrase\u00F1a");
+		lblConstrasea.setBounds(333, 233, 77, 14);
 		panel.add(lblConstrasea);
 		tabla = new DBTable();	 
 		conectarBD();
