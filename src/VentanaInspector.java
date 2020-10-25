@@ -18,6 +18,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -48,10 +50,15 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 	JComboBox CBUbicaciones;
 	DefaultListModel listModel;
 	JList listUbicParq;
+	String legajo;
+	String ubicacion;
+	LocalDate miFecha;
+	LocalDateTime miHora;
+	int idasociado_con;
 	
-	
-	public VentanaInspector() {
+	public VentanaInspector(String legajo) {
 		super();
+		this.legajo=legajo;
 		initGUI();
 		//tabla = new DBTable();	 
 		
@@ -111,9 +118,19 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		CBUbicaciones.setToolTipText("Ubicaciones");
 		
 		panelUbParq.add(CBUbicaciones);
-		
+		String[] patentes = obtenerPatentes();
 		listModel = new DefaultListModel();
 		listUbicParq = new JList(listModel);
+		listUbicParq.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				String select= listUbicParq.getSelectedValue().toString();
+				if(verificarAsociacion()) {
+					accede(select);
+					sigVentana(select,patentes,idasociado_con);
+				}
+			}
+		});
 		listUbicParq.setBounds(0, 65, 229, 233);
 		panelUbParq.add(listUbicParq);
 		
@@ -123,7 +140,7 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		
 		CBUbicaciones.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				String ubicacion = CBUbicaciones.getSelectedItem().toString();
+				ubicacion = CBUbicaciones.getSelectedItem().toString();
 				obtenerParquimetros(ubicacion);
 				repaint();
 			}
@@ -132,18 +149,100 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		
 		//Hay que verificar que ese inspector trabaje ese dia y turno, en esa ubicacion
 		
-		String[] patentes = obtenerPatentes();
+		if(verificarAsociacion()) {
+			
+		}
+		
+	
 		
 		
 		repaint();
 		
 	}
 	
+	private void sigVentana(String id_parq, String[] patentes, int id_asoc) {
+		UnidadParquimetro ins = new UnidadParquimetro(id_parq,patentes,id_asoc);
+		getContentPane().validate();
+		getContentPane().revalidate();
+		getContentPane().removeAll();
+		getContentPane().add(ins);
+		getContentPane().repaint();
+		setContentPane(getContentPane());
+	}
+	
+	private void accede(String select) {
+		String [] datos= select.split(" ",4);
+		String sql = "INSERT INTO accede VALUES (" + legajo + ", " + datos[2] +", " + miFecha +", " + miHora+ ");";
+		try {
+			Statement stmt=this.conexionBD.createStatement();
+			stmt.execute(sql);
+		}
+		catch(SQLException e){
+			e.printStackTrace();
+		}
+	}
+	
+	private boolean verificarAsociacion() {
+		//id_asociado_con, legajo, calle, altura, dia y turno
+		boolean verificar=false;
+		String sql = "SELECT * FROM asociado_con WHERE legajo="+ legajo +";";
+		try {
+			Statement stmt=this.conexionBD.createStatement();
+			ResultSet rs= stmt.executeQuery(sql);
+			miFecha = LocalDate.now(); //a-m-d
+			String day = miFecha.getDayOfWeek().toString();
+			String dia= toSpanish(day);
+			miHora = LocalDateTime.now();
+			int hora = miHora.getHour();
+			String turno= turno(hora);
+			idasociado_con=rs.getString(1);
+			while(rs.next()) {
+				if(rs.getString(5).equals(dia) && rs.getString(6).equals(turno)) {
+					String[] datosUbicacion= ubicacion.split(" ",2);
+					if(rs.getString(3).equals(datosUbicacion[0]) && rs.getString(4).equals(datosUbicacion[1])){
+						verificar=true;
+					}
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return verificar;
+	}
+	
+	private String turno(int hora) {
+		String toReturn="";
+		if(hora>=8 && hora<=13) {
+			toReturn="M";
+		}
+		else {//Habria que validar 20:00?
+			if(hora>=14 && hora<=19) {
+				toReturn="T";
+			}
+			else {
+				JOptionPane.showMessageDialog(null, "Horario no valido", "Error", JOptionPane.ERROR_MESSAGE);
+			}
+		}
+		return toReturn;
+	}
+	private String toSpanish(String day) {
+		String toReturn=" ";
+		switch (day)
+		{
+		case "SUNDAY": toReturn= "Do";
+		case "MONDAY": toReturn= "Lu";
+		case "TUESDAY": toReturn= "Ma";
+		case "WEDNESDAY": toReturn= "Mi";
+		case "THURSDAY": toReturn= "Ju";
+		case "FRIDAY": toReturn= "Vi";
+		case "SATURDAY": toReturn= "Sa";
+		}
+		return toReturn;
+	}
+	
 	//QUE HACEMOS CON LAS PATENTES?
 	private String[] obtenerPatentes() {
 		String[] arreglo = textField.getText().split(",");
-		
-		
 		return arreglo;
 	}
 	
@@ -230,21 +329,6 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 
 		
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	

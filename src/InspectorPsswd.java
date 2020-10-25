@@ -39,9 +39,6 @@ public class InspectorPsswd extends javax.swing.JInternalFrame  {
 	}
 	
 	
-	
-	
-	
 	private void initGUI() {
 		
 		try 
@@ -197,7 +194,7 @@ public class InspectorPsswd extends javax.swing.JInternalFrame  {
 	}
 	
 	private void siguienteVentana() {
-		VentanaInspector ins = new VentanaInspector();
+		VentanaInspector ins = new VentanaInspector(txtInspector.getText());
 		getContentPane().validate();
 		getContentPane().revalidate();
 		getContentPane().removeAll();
