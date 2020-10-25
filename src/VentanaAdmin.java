@@ -81,9 +81,7 @@ public class VentanaAdmin extends javax.swing.JInternalFrame {
 			this.setTitle("Consultas Administrador");
 			this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 			this.setResizable(true);
-			this.setClosable(true);
 			this.setVisible(true);
-			this.setMaximizable(true);
 			this.conectarBD();
 
 			// Utilizando DBTable
@@ -162,9 +160,7 @@ public class VentanaAdmin extends javax.swing.JInternalFrame {
 	private void thisComponentHidden(ComponentEvent evt) {
 		this.desconectarBD();
 	}
-
 	
-
 	private void conectarBD() {
 		if (this.conexionBD == null) {
 			try {
@@ -175,8 +171,7 @@ public class VentanaAdmin extends javax.swing.JInternalFrame {
 				String uriConexion = "jdbc:mysql://" + servidor + "/" + baseDatos
 						+ "?serverTimezone=America/Argentina/Buenos_Aires";
 
-				this.conexionBD = DriverManager.getConnection(uriConexion, usuario, clave);
-				
+				this.conexionBD = DriverManager.getConnection(uriConexion, usuario, clave);				
 			} catch (SQLException ex) {
 				JOptionPane.showMessageDialog(this,
 						"Se produjo un error al intentar conectarse a la base de datos.\n" + ex.getMessage(), "Error",
@@ -203,10 +198,8 @@ public class VentanaAdmin extends javax.swing.JInternalFrame {
 	
 	private void ejecutar(String query) {
 		String arr[] = query.split(" ", 2);
-		String primeraPalabra = arr[0].toUpperCase();
-		
-		if (primeraPalabra.equals("SELECT")) {
-			
+		String primeraPalabra = arr[0].toUpperCase();		
+		if (primeraPalabra.equals("SELECT")) {			
 			refrescarTabla(query);
 		}
 		else {
@@ -219,12 +212,9 @@ public class VentanaAdmin extends javax.swing.JInternalFrame {
 			Statement stmt = this.conexionBD.createStatement();
 
 			//String sql = "SELECT * FROM " + t;
-
 			stmt.execute(query);
-
 			// actualiza el contenido de la tabla con los datos del resulset rs
 			//tabla.refresh(rs);
-			
 			 for (int i = 0; i < tabla.getColumnCount(); i++)
 	    	  { // para que muestre correctamente los valores de tipo TIME (hora)  		   		  
 	    		 if	 (tabla.getColumn(i).getType()==Types.TIME)  
@@ -237,7 +227,6 @@ public class VentanaAdmin extends javax.swing.JInternalFrame {
 	    		    tabla.getColumn(i).setDateFormat("dd/MM/YYYY");
 	    		 }
 	          }  
-
 			//rs.close();
 			stmt.close();
 		} catch (SQLException ex) { JOptionPane.showMessageDialog(this,
@@ -256,14 +245,10 @@ public class VentanaAdmin extends javax.swing.JInternalFrame {
 	private void refrescarTabla(String query) {
 		try {
 			Statement stmt = this.conexionBD.createStatement();
-
 			//String sql = "SELECT * FROM " + t;
-
 			ResultSet rs = stmt.executeQuery(query);
-
 			// actualiza el contenido de la tabla con los datos del resulset rs
 			tabla.refresh(rs);
-			
 			 for (int i = 0; i < tabla.getColumnCount(); i++)
 	    	  { // para que muestre correctamente los valores de tipo TIME (hora)  		   		  
 	    		 if	 (tabla.getColumn(i).getType()==Types.TIME)  
@@ -276,7 +261,6 @@ public class VentanaAdmin extends javax.swing.JInternalFrame {
 	    		    tabla.getColumn(i).setDateFormat("dd/MM/YYYY");
 	    		 }
 	          }  
-
 			rs.close();
 			stmt.close();
 		} catch (SQLException ex) {
@@ -288,19 +272,12 @@ public class VentanaAdmin extends javax.swing.JInternalFrame {
 			System.out.println("SQLException: " + ex.getMessage());
 			System.out.println("SQLState: " + ex.getSQLState());
 			System.out.println("VendorError: " + ex.getErrorCode());
-		}
-
-		
+		}	
 	}
-
-	
-
 	
 	//Todas las tablas de la base de datos
-	private String[] obtenerTablas() {
-		
-		String[] tablas = new String[11];
-		
+	private String[] obtenerTablas() {		
+		String[] tablas = new String[11];		
 		try {
 			DatabaseMetaData md = this.conexionBD.getMetaData();
 			String[] types = {"TABLE"};
@@ -311,15 +288,11 @@ public class VentanaAdmin extends javax.swing.JInternalFrame {
 			while (rs.next()) {
 				String tblName = rs.getString("TABLE_NAME");
 				tablas[i]= (tblName);
-				i++;
-				
-			}
-			
+				i++;				
+			}			
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}
-
-		
+		}	
 		return tablas;
 	}
 	
@@ -327,30 +300,21 @@ public class VentanaAdmin extends javax.swing.JInternalFrame {
 	private String[] mostrarInfo() {
 		
 		int seleccionado = listTablas.getSelectedIndex();
-		
 		String [] atributos= null;
 		String tabla = tablas[seleccionado];
-		
 		String sql = "SELECT * FROM " + tabla + ";";
 		Statement stmt;
 		try {
-			
-			
 			stmt = this.conexionBD.createStatement();
 			ResultSet  rs= stmt.executeQuery(sql);
 			ResultSetMetaData metaData = rs.getMetaData();
 			int count = metaData.getColumnCount();
 			atributos = new String[count];
-			
-			
 			for (int i = 1; i<=count; i++) {
 				atributos[i-1] = metaData.getColumnName(i);
 				
 			}
-			
-			
-			
-			
+			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

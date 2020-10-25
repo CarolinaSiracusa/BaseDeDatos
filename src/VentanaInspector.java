@@ -56,7 +56,7 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 	private String ubicacion;
 	private LocalDate miFecha;
 	private LocalDateTime miHora;
-	private String idasociado_con;
+	private int idasociado_con;
 
 	public VentanaInspector(String legajo) {
 		super();
@@ -70,16 +70,13 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 	private void initGUI() {
 		
 		
-		setPreferredSize(new Dimension(800, 600));
+		setPreferredSize(new Dimension(900, 700));
 		this.setResizable(true);
-	
-		this.setBounds(0, 0, 801, 600);
+		this.setBounds(0, 0, 900, 700);
 		this.setTitle("Consultas Administrador");
 		this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		this.setResizable(true);
-		this.setClosable(true);
 		this.setVisible(true);
-		this.setMaximizable(true);
 		this.setBackground(new Color(187, 222, 251));
 		
 		conectarBD();
@@ -134,19 +131,17 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 			public void mouseClicked(MouseEvent e) {
 				String select= listUbicParq.getSelectedValue().toString();
 				if(verificarAsociacion()) {
+					System.out.println("No me coincide nada :(");
 					accede(select);
-					sigVentana(select,patentes,idasociado_con);
+					sigVentana(patentes,idasociado_con,ubicacion);
 				}
 			}
 		});
 		listUbicParq.setBounds(0, 65, 229, 233);
 		listUbicParq.setBackground(new Color(204, 204, 255 ));
-		panelUbParq.add(listUbicParq);
-		
+		panelUbParq.add(listUbicParq);		
 		obtenerUbicaciones();
 		repaint();
-		
-		
 		CBUbicaciones.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				ubicacion = CBUbicaciones.getSelectedItem().toString();
@@ -163,8 +158,9 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		
 	}
 	
-	private void sigVentana(String id_parq, String[] patentes, String id_asoc) {
-		//UnidadParquimetro uni = new UnidadParquimetro(id_parq,patentes,id_asoc);
+	//Siguiente ventana
+	private void sigVentana(String[] patentes, int id_asoc, String ubicacion) {
+		UnidadParquimetro uni = new UnidadParquimetro(patentes,id_asoc,ubicacion);
 		getContentPane().validate();
 		getContentPane().revalidate();
 		getContentPane().removeAll();
@@ -173,6 +169,7 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		setContentPane(getContentPane());
 	}
 	
+	//Registrando los accesos
 	private void accede(String select) {
 		String [] datos= select.split(" ",4);
 		String sql = "INSERT INTO accede VALUES (" + legajo + ", " + datos[2] +", " + miFecha +", " + miHora+ ");";
@@ -185,6 +182,7 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		}
 	}
 	
+	//Verifica que el inspector este asociado correctamente
 	private boolean verificarAsociacion() {
 		//id_asociado_con, legajo, calle, altura, dia y turno
 		boolean verificar=false;
@@ -201,7 +199,7 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 			//idasociado_con=rs.getString(1);
 			while(rs.next()) {
 				if(rs.getString(5).equals(dia) && rs.getString(6).equals(turno)) {
-					idasociado_con=rs.getString(1);
+					idasociado_con=rs.getInt(1);
 					String[] datosUbicacion= ubicacion.split(" ",2);
 					if(rs.getString(3).equals(datosUbicacion[0]) && rs.getString(4).equals(datosUbicacion[1])){
 						verificar=true;
@@ -215,6 +213,7 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		return verificar;
 	}
 	
+	//Devuelve el turno segun la hora
 	private String turno(int hora) {
 		String toReturn="";
 		if(hora>=8 && hora<=13) {
@@ -230,6 +229,8 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		}
 		return toReturn;
 	}
+	
+	//Devuelve el dia en español
 	private String toSpanish(String day) {
 		String toReturn=" ";
 		switch (day)
@@ -245,13 +246,12 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		return toReturn;
 	}
 	
-	//QUE HACEMOS CON LAS PATENTES?
 	private String[] obtenerPatentes() {
 		String[] arreglo = textField.getText().split(",");
 		return arreglo;
 	}
 	
-	
+	//Obtenemos parquimetros de acuerdo a la ubicacion
 	private void obtenerParquimetros(String ubicacion) {
 		String ubic[] = ubicacion.split(" ", 2);
 		String sql = "SELECT * FROM parquimetros;";
@@ -282,7 +282,6 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 	}
 	
 	
-	
 	private void conectarBD() {
 		if (this.conexionBD == null) {
 			try {
@@ -292,9 +291,7 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 				String clave = "inspector";
 				String uriConexion = "jdbc:mysql://" + servidor + "/" + baseDatos
 						+ "?serverTimezone=America/Argentina/Buenos_Aires";
-
-				this.conexionBD = DriverManager.getConnection(uriConexion, usuario, clave);
-				
+				this.conexionBD = DriverManager.getConnection(uriConexion, usuario, clave);				
 			} catch (SQLException ex) {
 				JOptionPane.showMessageDialog(this,
 						"Se produjo un error al intentar conectarse a la base de datos.\n" + ex.getMessage(), "Error",
@@ -312,7 +309,6 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		try {
 			stmt = this.conexionBD.createStatement();
 			ResultSet  rs= stmt.executeQuery(sql);
-
 			while (rs.next()) {
 				String calle = rs.getString(1);
 				String altura = rs.getString(2);
@@ -326,12 +322,6 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 			System.out.println("SQLException: " + ex.getMessage());
 			System.out.println("SQLState: " + ex.getSQLState());
 			System.out.println("VendorError: " + ex.getErrorCode());
-		}
-
-		
-	}
-	
-	
-	
-	
+		}		
+	}		
 }
