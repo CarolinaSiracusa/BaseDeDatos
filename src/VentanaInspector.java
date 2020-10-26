@@ -12,15 +12,18 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.util.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
 import java.sql.Types;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -54,8 +57,7 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 	private JList listUbicParq;
 	private String legajo;
 	private String ubicacion;
-	private LocalDate miFecha;
-	private LocalDateTime miHora;
+	private Date miFecha;
 	private int idasociado_con;
 
 	public VentanaInspector(String legajo) {
@@ -73,7 +75,7 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		setPreferredSize(new Dimension(900, 700));
 		this.setResizable(true);
 		this.setBounds(0, 0, 900, 700);
-		this.setTitle("Consultas Administrador");
+		this.setTitle("Ventana Inspector");
 		this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		this.setResizable(true);
 		this.setVisible(true);
@@ -130,10 +132,12 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				String select= listUbicParq.getSelectedValue().toString();
-				if(verificarAsociacion()) {
-					System.out.println("No me coincide nada :(");
+				if(verificarAsociacion()) {		
 					accede(select);
 					sigVentana(patentes,idasociado_con,ubicacion);
+				}
+				else {
+					JOptionPane.showMessageDialog(null, "Datos Incorrectos", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -164,7 +168,7 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		getContentPane().validate();
 		getContentPane().revalidate();
 		getContentPane().removeAll();
-		//getContentPane().add(ins);
+		getContentPane().add(uni);
 		getContentPane().repaint();
 		setContentPane(getContentPane());
 	}
@@ -172,7 +176,9 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 	//Registrando los accesos
 	private void accede(String select) {
 		String [] datos= select.split(" ",4);
-		String sql = "INSERT INTO accede VALUES (" + legajo + ", " + datos[2] +", " + miFecha +", " + miHora+ ");";
+		java.sql.Date fecha= java.sql.Date.valueOf((new SimpleDateFormat("yyyy-MM-dd")).format(miFecha));
+		java.sql.Time hora= java.sql.Time.valueOf((new SimpleDateFormat("HH:mm:ss")).format(miFecha));
+		String sql = "INSERT INTO accede VALUES (" + legajo + ", " + datos[1] +", " + "'"+fecha+"'" +", " + "'"+hora+"'" + ");";
 		try {
 			Statement stmt=this.conexionBD.createStatement();
 			stmt.execute(sql);
@@ -190,13 +196,11 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 		try {
 			Statement stmt=this.conexionBD.createStatement();
 			ResultSet rs= stmt.executeQuery(sql);
-			miFecha = LocalDate.now(); //a-m-d
-			String day = miFecha.getDayOfWeek().toString();
-			String dia= toSpanish(day);
-			miHora = LocalDateTime.now();
-			int hora = miHora.getHour();
+			miFecha = new Date(); //a-m-d
+			String day= new SimpleDateFormat("EEEEE").format(miFecha); 
+			String dia= diaSemana(day);
+			int hora = Integer.parseInt(new SimpleDateFormat("H").format(miFecha));
 			String turno= turno(hora);
-			//idasociado_con=rs.getString(1);
 			while(rs.next()) {
 				if(rs.getString(5).equals(dia) && rs.getString(6).equals(turno)) {
 					idasociado_con=rs.getInt(1);
@@ -206,7 +210,8 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 					}
 				}
 			}
-			
+			rs.close();
+			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -217,11 +222,11 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 	private String turno(int hora) {
 		String toReturn="";
 		if(hora>=8 && hora<=13) {
-			toReturn="M";
+			toReturn="m";
 		}
 		else {//Habria que validar 20:00?
-			if(hora>=14 && hora<=19) {
-				toReturn="T";
+			if(hora>=14 && hora<=22) {
+				toReturn="t";
 			}
 			else {
 				JOptionPane.showMessageDialog(null, "Horario no valido", "Error", JOptionPane.ERROR_MESSAGE);
@@ -231,17 +236,17 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 	}
 	
 	//Devuelve el dia en español
-	private String toSpanish(String day) {
+	private String diaSemana(String day) {
 		String toReturn=" ";
 		switch (day)
 		{
-		case "SUNDAY": toReturn= "Do";
-		case "MONDAY": toReturn= "Lu";
-		case "TUESDAY": toReturn= "Ma";
-		case "WEDNESDAY": toReturn= "Mi";
-		case "THURSDAY": toReturn= "Ju";
-		case "FRIDAY": toReturn= "Vi";
-		case "SATURDAY": toReturn= "Sa";
+		case "domingo": toReturn= "do"; break;
+		case "lunes": toReturn= "lu"; break;
+		case "martes": toReturn= "ma";break;
+		case "miercoles": toReturn= "mi";break;
+		case "jueves": toReturn= "ju";break;
+		case "viernes": toReturn= "vi";break;
+		case "sabado": toReturn= "sa";break;
 		}
 		return toReturn;
 	}
@@ -267,10 +272,9 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 					String datosParq = "ID: " + rs.getString(1) + " Nro: "+ rs.getString(2);
 					listModel.addElement(datosParq);
 				}
-			}
-			
-			
-			
+			}	
+			rs.close();
+			stmt.close();
 		} catch (SQLException ex) {
 			JOptionPane.showMessageDialog(this,
 					"Se produjo un error al intentar conectarse a la base de datos.\n" + ex.getMessage(), "Error",
@@ -278,6 +282,7 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 			System.out.println("SQLException: " + ex.getMessage());
 			System.out.println("SQLState: " + ex.getSQLState());
 			System.out.println("VendorError: " + ex.getErrorCode());
+			System.out.println("OBTENERPARQ");
 		}
 	}
 	
@@ -299,9 +304,11 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 				System.out.println("SQLException: " + ex.getMessage());
 				System.out.println("SQLState: " + ex.getSQLState());
 				System.out.println("VendorError: " + ex.getErrorCode());
+				System.out.println("CONECTARBD");
 			}
 		}
 	}
+	
 	
 	private void obtenerUbicaciones() {
 		String sql = "SELECT DISTINCT calle, altura FROM parquimetros;";
@@ -315,6 +322,8 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 				String ubic = calle + " " + altura;
 				CBUbicaciones.addItem(ubic);
 			}		
+			rs.close();
+			stmt.close();
 		} catch (SQLException ex) {
 			JOptionPane.showMessageDialog(this,
 					"Se produjo un error al intentar conectarse a la base de datos.\n" + ex.getMessage(), "Error",
@@ -322,6 +331,7 @@ public class VentanaInspector extends javax.swing.JInternalFrame{
 			System.out.println("SQLException: " + ex.getMessage());
 			System.out.println("SQLState: " + ex.getSQLState());
 			System.out.println("VendorError: " + ex.getErrorCode());
+			System.out.println("OBTENERUBIC");
 		}		
 	}		
 }
